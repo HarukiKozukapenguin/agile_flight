@@ -29,6 +29,9 @@ GPATH
 # temporary files
 *~
 
+Reading_CSV/*
+envtest/depth/*
+
 .history/*
 .vscode/*
 
