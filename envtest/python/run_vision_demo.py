@@ -68,6 +68,10 @@ def main():
       # generate dummmy action [-1, 1]
       dummy_actions = np.random.rand(num_env, act_dim) * 2 - np.ones(shape=(num_env, act_dim))
 
+      print(dummy_actions)
+    
+    #   dummy_actions = np.array([[1, 0, 0, 1, 0, 0, 0]])
+
       # A standard OpenAI gym style interface for reinforcement learning.    
       obs, rew, done, info = env.step(dummy_actions)
  
