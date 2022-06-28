@@ -41,7 +41,8 @@ def main():
         cfg["unity"]["render"] = "no"
 
 
-    cfg["environment"]["control_feedthrough"] = True
+    cfg["environment"]["control_feedthrough"] = False
+    # change control_feedthrough
 
     # load the Unity standardalone, make sure you have downloaded it.
     os.system(os.environ["FLIGHTMARE_PATH"] + "/flightrender/RPG_Flightmare.x86_64 &")
@@ -72,7 +73,8 @@ def main():
       env.connectUnity()
 
     for frame_id in range(ep_length):
-      dummy_actions = np.array([[0,0,0.5,0,0,0,0]])
+      dummy_actions = np.array([[0,0,0,0,0,0,0]], dtype = np.float64)
+    #dummy_actions' s type should be float64
 
       env.step(dummy_actions)
 
