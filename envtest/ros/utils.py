@@ -37,6 +37,7 @@ class AgileCommand:
         self.bodyrates = [0.0, 0.0, 0.0]
 
         # LINVEL functionality
+        self.position = [0.0, 0.0, 0.0]
         self.velocity = [0.0, 0.0, 0.0]
         self.yawrate = 0.0
 

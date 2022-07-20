@@ -90,8 +90,8 @@ def compute_command_state_based(state, obstacles, rl_policy=None):
     command.yawrate = 0.0
 
     # If you want to test your RL policy
-    # if rl_policy is not None:
-    #     command = rl_example(state, obstacles.boxel, rl_policy)
+    if rl_policy is not None:
+        command = rl_example(state, obstacles.boxel, rl_policy)
 
     ################################################
     # !!! End of user code !!!

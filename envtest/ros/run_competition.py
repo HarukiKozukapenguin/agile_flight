@@ -4,8 +4,9 @@ import argparse
 import rospy
 from dodgeros_msgs.msg import Command
 from dodgeros_msgs.msg import QuadState
+from dodgeros_msgs.msg import VelCommand
 from cv_bridge import CvBridge
-from geometry_msgs.msg import TwistStamped
+# from geometry_msgs.msg import TwistStamped
 from sensor_msgs.msg import Image
 from std_msgs.msg import Empty
 
@@ -44,7 +45,7 @@ class AgilePilotNode:
 
         # Command publishers
         self.cmd_pub = rospy.Publisher("/" + quad_name + "/dodgeros_pilot/feedthrough_command", Command, queue_size=1)
-        self.linvel_pub = rospy.Publisher("/" + quad_name + "/dodgeros_pilot/velocity_command", TwistStamped,
+        self.linvel_pub = rospy.Publisher("/" + quad_name + "/dodgeros_pilot/velocity_command", VelCommand,
                                           queue_size=1)
         print("Initialization completed!")
 
@@ -73,13 +74,13 @@ class AgilePilotNode:
             return
         past = rospy.get_rostime()
         
-        # if self.rl_policy is None:
-        #     self.rl_policy = load_rl_policy(self.ppo_path)
+        if self.rl_policy is None:
+            self.rl_policy = load_rl_policy(self.ppo_path)
         
         load_time = rospy.get_rostime() - past
         past = rospy.get_rostime()
 
-        command = compute_command_state_based(state=self.state, obstacles=obs_data) #, rl_policy=self.rl_policy
+        command = compute_command_state_based(state=self.state, obstacles=obs_data, rl_policy=self.rl_policy)
 
         calc_time = rospy.get_rostime() - past
         past = rospy.get_rostime()
@@ -117,8 +118,11 @@ class AgilePilotNode:
                 self.cmd_pub.publish(cmd_msg)
                 return
         elif command.mode == AgileCommandMode.LINVEL:
-            vel_msg = TwistStamped()
+            vel_msg = VelCommand()
             vel_msg.header.stamp = rospy.Time(command.t)
+            vel_msg.position.x = command.position[0]
+            vel_msg.position.y = command.position[1]
+            vel_msg.position.z = command.position[2]
             vel_msg.twist.linear.x = command.velocity[0]
             vel_msg.twist.linear.y = command.velocity[1]
             vel_msg.twist.linear.z = command.velocity[2]

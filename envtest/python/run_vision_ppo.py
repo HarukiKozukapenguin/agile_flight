@@ -85,9 +85,9 @@ def main():
     #same level regardless of argument of simulator.
     old_num_envs = cfg["simulation"]["num_envs"]
     cfg["simulation"]["num_envs"] = 1
-    eval_env = wrapper.FlightEnvVec(
-        VisionEnv_v1(dump(cfg, Dumper=RoundTripDumper), False)
-    )
+    eval_env = VisionEnv_v1(dump(cfg, Dumper=RoundTripDumper), False)
+    eval_env = wrapper.FlightEnvVec(eval_env)
+    
     # cfg["environment"]["level"] = old_envs_level
     cfg["simulation"]["num_envs"] = old_num_envs
 

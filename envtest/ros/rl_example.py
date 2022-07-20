@@ -15,6 +15,8 @@ from stable_baselines3.common.utils import get_device
 from stable_baselines3.ppo.policies import MlpPolicy
 from cv_bridge import CvBridge
 
+import math
+
 def normalize_obs(obs, obs_mean, obs_var):
     return (obs - obs_mean) / np.sqrt(obs_var + 1e-8)
 
@@ -33,7 +35,9 @@ def rl_example(state, obstacles, rl_policy=None):
     goal_vel = np.array([5.0, 0.0, 0.0]) 
     world_box = np.array([-20, 80, -10, 10, 0.0, 10])
 
+    # (w,x,y,z)->(x,y,z,w) (cf. utils.py)
     att_aray = np.array([state.att[1], state.att[2], state.att[3], state.att[0]])
+    euler = quaternionToEuler(att_aray)
     rotation_matrix = R.from_quat(att_aray).as_matrix().reshape((9,), order="F")
     obs = np.concatenate([
         goal_vel, rotation_matrix, state.pos, state.vel, obs_vec, 
@@ -47,11 +51,14 @@ def rl_example(state, obstacles, rl_policy=None):
     action, _ = policy.predict(norm_obs, deterministic=True)
     action = (action * act_std + act_mean)[0, :]
 
-    command_mode = 1
+    command_mode = 2
     command = AgileCommand(command_mode)
     command.t = state.t
-    command.collective_thrust = action[0] 
-    command.bodyrates = action[1:4] 
+    # command.collective_thrust = action[0] 
+    # command.bodyrates = action[1:4] 
+    command.position = state.pos + action[0:3]
+    command.velocity = state.vel + action[3:6]
+    command.yawrate = euler[2] + action[6]    
     return command
 
 def rl_example_vision(state, img, rl_policy=None):
@@ -89,6 +96,19 @@ def rl_example_vision(state, img, rl_policy=None):
     command.collective_thrust = action[0] 
     command.bodyrates = action[1:4] 
     return command
+
+def quaternionToEuler(quat):
+    euler = np.zeros(3)
+    euler[0] = math.atan2(2 * quat[3] * quat[0] + 2 * quat[1] * quat[2],
+                         quat[3] * quat[3] - quat[0] * quat[0] -
+                           quat[1] * quat[1] + quat[2] * quat[2])
+    euler[1] = -math.asin(2 * quat[0] * quat[2] - 2 * quat[3] * quat[1])
+    euler[2] = math.atan2(2 * quat[3] * quat[2] + 2 * quat[0] * quat[1],
+                         quat[3] * quat[3] + quat[0] * quat[0] -
+                           quat[1] * quat[1] - quat[2] * quat[2]) 
+                        #    [-pi,pi] 
+    return euler
+
 
 def img_to_obs(img): #http://docs.ros.org/en/noetic/api/sensor_msgs/html/msg/Image.html #change hyperparameters!
     # print("type is " + str(type(img)))
@@ -171,15 +191,16 @@ def load_rl_policy(policy_path):
     cfg_dir =  policy_path + "/config.yaml"
 
     # action 
-    env_cfg = YAML().load(open(cfg_dir, "r"))
-    quad_mass = env_cfg["quadrotor_dynamics"]["mass"]
-    omega_max = env_cfg["quadrotor_dynamics"]["omega_max"]
-    thrust_max = 4 * env_cfg["quadrotor_dynamics"]["thrust_map"][0] * \
-        env_cfg["quadrotor_dynamics"]["motor_omega_max"] * \
-        env_cfg["quadrotor_dynamics"]["motor_omega_max"]
-    act_mean = np.array([thrust_max / quad_mass / 2, 0.0, 0.0, 0.0])[np.newaxis, :] 
-    act_std = np.array([thrust_max / quad_mass / 2, \
-       omega_max[0], omega_max[1], omega_max[2]])[np.newaxis, :] 
+    # env_cfg = YAML().load(open(cfg_dir, "r"))
+    # quad_mass = env_cfg["quadrotor_dynamics"]["mass"]
+    # omega_max = env_cfg["quadrotor_dynamics"]["omega_max"]
+    # thrust_max = 4 * env_cfg["quadrotor_dynamics"]["thrust_map"][0] * \
+    #     env_cfg["quadrotor_dynamics"]["motor_omega_max"] * \
+    #     env_cfg["quadrotor_dynamics"]["motor_omega_max"]
+
+    # act_mean, act_std is defined in vision_env.cpp
+    act_mean = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0])[np.newaxis, :] 
+    act_std = np.array([0.6, 0.6, 0.3, 1.0, 1.0, 1.0, 0.1])[np.newaxis, :] 
 
     rms_data = np.load(rms_dir)
     obs_mean = np.mean(rms_data["mean"], axis=0)
