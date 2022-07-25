@@ -128,7 +128,8 @@ class AgilePilotNode:
             vel_msg.twist.linear.z = command.velocity[2]
             vel_msg.twist.angular.x = 0.0
             vel_msg.twist.angular.y = 0.0
-            vel_msg.twist.angular.z = command.yawrate
+            # vel_msg.twist.angular.z = command.yawrate
+            vel_msg.twist.angular.z = 0.0
             if self.publish_commands:
                 self.linvel_pub.publish(vel_msg)
                 return
