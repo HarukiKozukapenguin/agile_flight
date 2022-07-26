@@ -58,7 +58,8 @@ def rl_example(state, obstacles, rl_policy=None):
     # command.bodyrates = action[1:4] 
     command.position = state.pos + action[0:3]
     command.velocity = state.vel + action[3:6]
-    command.yawrate = euler[2] + action[6]    
+    command.yawrate = action[6] 
+    # Be careful: in simulator action is yaw itself, but now it is yawrate   
     return command
 
 def rl_example_vision(state, img, rl_policy=None):
