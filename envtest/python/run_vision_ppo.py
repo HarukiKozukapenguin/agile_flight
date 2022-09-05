@@ -13,8 +13,10 @@ from ruamel.yaml import YAML, RoundTripDumper, dump
 # from ruamel import yaml
 from stable_baselines3.common.utils import get_device
 from stable_baselines3.ppo.policies import MlpPolicy
+from sb3_contrib import RecurrentPPO
 
-from rpg_baselines.torch.common.ppo import PPO
+# from rpg_baselines.torch.common.ppo import PPO
+
 from rpg_baselines.torch.envs import vec_env_wrapper as wrapper
 from rpg_baselines.torch.common.util import test_policy
 
@@ -99,17 +101,17 @@ def main():
         # level_list = cfg["environment"]["level"]
         # for level in level_list:
         #     cfg["environment"]["level"] = [level]
-        model = PPO(
+        model = RecurrentPPO(
             tensorboard_log=log_dir,
-            policy="MlpPolicy",
+            policy="MlpLstmPolicy",
             policy_kwargs=dict(
                 activation_fn=torch.nn.ReLU,
                 net_arch=[dict(pi=[256, 256], vf=[512, 512])],
                 log_std_init=-0.5,
             ),
             env=train_env,
-            eval_env=eval_env,
-            use_tanh_act=True,
+            create_eval_env=True,
+            # use_tanh_act=True,
             gae_lambda=0.95,
             gamma=0.99,
             n_steps=250,
@@ -119,22 +121,22 @@ def main():
             batch_size=25000,
             clip_range=0.2,
             use_sde=False,  # don't use (gSDE), doesn't work
-            env_cfg=cfg,
+            # env_cfg=cfg,
             verbose=1,
-            check = args.check
+            # check = args.check
         )
         # print(model.logger)
-        model.learn(total_timesteps=int(5E7), log_interval=(10, 50))
-        cfg_dir = model.logger.get_dir()+"/config_new.yaml"
-        with open(cfg_dir, "w") as outfile:
-            dump({
-        "rewards": {
-            "move_coeff": args.move_coeff,
-            "collision_coeff": args.collision_coeff,
-            "collision_exp_coeff": args.collision_exp_coeff,
-            "survive_rew": args.survive_rew,
-        }
-    }, outfile, default_flow_style=False)
+        model.learn(total_timesteps=int(5E7), log_interval=10)
+    #     cfg_dir = model.logger.get_dir()+"/config_new.yaml"
+    #     with open(cfg_dir, "w") as outfile:
+    #         dump({
+    #     "rewards": {
+    #         "move_coeff": args.move_coeff,
+    #         "collision_coeff": args.collision_coeff,
+    #         "collision_exp_coeff": args.collision_exp_coeff,
+    #         "survive_rew": args.survive_rew,
+    #     }
+    # }, outfile, default_flow_style=False)
         finish_time = time.time()
         print("learning time is "+ str(finish_time-start_time))
     else:
