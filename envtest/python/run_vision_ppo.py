@@ -12,8 +12,9 @@ from flightgym import VisionEnv_v1
 from ruamel.yaml import YAML, RoundTripDumper, dump
 # from ruamel import yaml
 from stable_baselines3.common.utils import get_device
-from stable_baselines3.ppo.policies import MlpPolicy
+# from stable_baselines3.ppo.policies import MlpPolicy
 from sb3_contrib import RecurrentPPO
+from sb3_contrib.ppo_recurrent import MlpLstmPolicy
 
 # from rpg_baselines.torch.common.ppo import PPO
 
@@ -110,7 +111,7 @@ def main():
                 log_std_init=-0.5,
             ),
             env=train_env,
-            create_eval_env=True,
+            eval_env=eval_env,
             # use_tanh_act=True,
             gae_lambda=0.95,
             gamma=0.99,
@@ -123,10 +124,10 @@ def main():
             use_sde=False,  # don't use (gSDE), doesn't work
             # env_cfg=cfg,
             verbose=1,
-            # check = args.check
+            check = args.check
         )
         # print(model.logger)
-        model.learn(total_timesteps=int(5E7), log_interval=10)
+        model.learn(total_timesteps=int(3E8), log_interval=10)
     #     cfg_dir = model.logger.get_dir()+"/config_new.yaml"
     #     with open(cfg_dir, "w") as outfile:
     #         dump({
@@ -142,14 +143,16 @@ def main():
     else:
         os.system(os.environ["FLIGHTMARE_PATH"] + "/flightrender/RPG_Flightmare.x86_64 &")
         #
-        weight = rsg_root + "/saved/PPO_{0}/Policy/iter_{1:05d}.pth".format(args.trial, args.iter)
-        env_rms = rsg_root +"/saved/PPO_{0}/RMS/iter_{1:05d}.npz".format(args.trial, args.iter)
+        weight = rsg_root + "/saved/RecurrentPPO_{0}/Policy/iter_{1:05d}.pth".format(args.trial, args.iter)
+        env_rms = rsg_root +"/saved/RecurrentPPO_{0}/RMS/iter_{1:05d}.npz".format(args.trial, args.iter)
 
         device = get_device("auto")
         saved_variables = torch.load(weight, map_location=device)
         # Create policy object
-        policy = MlpPolicy(**saved_variables["data"])
-        #
+
+        # print("**saved_variables[data]",**saved_variables["data"])
+        policy = MlpLstmPolicy(**saved_variables["data"])
+        # #
         policy.action_net = torch.nn.Sequential(policy.action_net, torch.nn.Tanh())
         # Load weights
         policy.load_state_dict(saved_variables["state_dict"], strict=False)
