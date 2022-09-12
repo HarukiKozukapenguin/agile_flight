@@ -112,7 +112,6 @@ def main():
             ),
             env=train_env,
             eval_env=eval_env,
-            # use_tanh_act=True,
             gae_lambda=0.95,
             gamma=0.99,
             n_steps=250,
@@ -148,16 +147,13 @@ def main():
 
         device = get_device("auto")
         saved_variables = torch.load(weight, map_location=device)
-        # Create policy object
 
-        # print("**saved_variables[data]",**saved_variables["data"])
-        policy = MlpLstmPolicy(**saved_variables["data"])
-        # #
-        policy.action_net = torch.nn.Sequential(policy.action_net, torch.nn.Tanh())
-        # Load weights
-        policy.load_state_dict(saved_variables["state_dict"], strict=False)
-        policy.to(device)
-        # 
+        policy = MlpLstmPolicy.load(weight, device = device)
+        # # print("before policy.action_net: ",policy.action_net)
+        # # policy.action_net = torch.nn.Sequential(policy.action_net)
+        # # come from nn.Moduleq
+        # policy.to(device)
+
         eval_env.load_rms(env_rms)
         test_policy(eval_env, policy, render=args.render)
 
