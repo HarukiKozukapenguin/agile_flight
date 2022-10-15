@@ -108,7 +108,7 @@ def main():
             policy_kwargs=dict(
                 activation_fn=torch.nn.ReLU,
                 net_arch=[dict(pi=[256, 256], vf=[512, 512])],
-                log_std_init=-0.5,
+                log_std_init=0.0,
             ),
             env=train_env,
             eval_env=eval_env,
@@ -126,7 +126,7 @@ def main():
             check = args.check
         )
         # print(model.logger)
-        model.learn(total_timesteps=int(3E8), log_interval=10)
+        model.learn(total_timesteps=int(2E8), log_interval=10)
     #     cfg_dir = model.logger.get_dir()+"/config_new.yaml"
     #     with open(cfg_dir, "w") as outfile:
     #         dump({
@@ -155,6 +155,8 @@ def main():
         # policy.to(device)
 
         eval_env.load_rms(env_rms)
+        # print("eval_env.connectUnity()")
+        # print(eval_env.connectUnity())
         test_policy(eval_env, policy, render=args.render)
 
 
