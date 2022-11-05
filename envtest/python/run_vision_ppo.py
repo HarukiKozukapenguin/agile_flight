@@ -38,6 +38,7 @@ def parser():
     parser.add_argument("--iter", type=int, default=100, help="PPO iter number")
     parser.add_argument("--move_coeff", type=float, help="move_coeff of rewards")
     parser.add_argument("--collision_coeff", type=float, help="collision_coeff of rewards")
+    parser.add_argument("--vel_collision_coeff", type=float, help="vel_collision_coeff of rewards")
     parser.add_argument("--collision_exp_coeff", type=float, help="collision_exp_coeff of rewards")
     parser.add_argument("--dist_margin", type=float, help="dist_margin for collision of rewards")
     parser.add_argument("--survive_rew", type=float, help="collision_coeff of rewards")
@@ -64,6 +65,8 @@ def main():
         cfg["rewards"]["move_coeff"] = args.move_coeff
     if args.collision_coeff != None:
         cfg["rewards"]["collision_coeff"] = args.collision_coeff
+    if args.vel_collision_coeff != None:
+        cfg["rewards"]["vel_collision_coeff"] = args.vel_collision_coeff
     if args.collision_exp_coeff != None:
         cfg["rewards"]["collision_exp_coeff"] = args.collision_exp_coeff
     if args.dist_margin != None:
