@@ -133,6 +133,8 @@ def main():
                 activation_fn=torch.nn.ReLU,
                 net_arch=[dict(pi=[256, 256], vf=[512, 512])],
                 log_std_init=0.0,
+                shared_lstm=True,
+                enable_critic_lstm=False,
             ),
             env=train_env,
             eval_env=eval_env,
@@ -151,7 +153,7 @@ def main():
         )
         # print(model.logger)
         model.learn(
-            total_timesteps=int(2e8), policy_log_interval=100, tb_log_interval=10
+            total_timesteps=int(1e8), policy_log_interval=100, tb_log_interval=10
         )
         finish_time = time.time()
         print("learning time is " + str(finish_time - start_time))
