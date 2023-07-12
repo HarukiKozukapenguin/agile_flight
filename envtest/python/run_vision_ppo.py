@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import argparse
 import math
+
 #
 import os
 
@@ -10,8 +11,10 @@ import torch
 import time
 from flightgym import VisionEnv_v1
 from ruamel.yaml import YAML, RoundTripDumper, dump
+
 # from ruamel import yaml
 from stable_baselines3.common.utils import get_device
+
 # from stable_baselines3.ppo.policies import MlpPolicy
 from sb3_contrib import RecurrentPPO
 from sb3_contrib.ppo_recurrent import MlpLstmPolicy
@@ -32,17 +35,36 @@ def configure_random_seed(seed, env=None):
 def parser():
     parser = argparse.ArgumentParser()
     parser.add_argument("--seed", type=int, default=0, help="Random seed")
-    parser.add_argument("--train", type=int, default=1, help="Train the policy or evaluate the policy")
+    parser.add_argument(
+        "--train", type=int, default=1, help="Train the policy or evaluate the policy"
+    )
     parser.add_argument("--render", type=int, default=0, help="Render with Unity")
     parser.add_argument("--trial", type=int, default=1, help="PPO trial number")
     parser.add_argument("--iter", type=int, default=100, help="PPO iter number")
     parser.add_argument("--move_coeff", type=float, help="move_coeff of rewards")
-    parser.add_argument("--collision_coeff", type=float, help="collision_coeff of rewards")
-    parser.add_argument("--vel_collision_coeff", type=float, help="vel_collision_coeff of rewards")
-    parser.add_argument("--collision_exp_coeff", type=float, help="collision_exp_coeff of rewards")
-    parser.add_argument("--dist_margin", type=float, help="dist_margin for collision of rewards")
+    parser.add_argument(
+        "--collision_coeff", type=float, help="collision_coeff of rewards"
+    )
+    parser.add_argument(
+        "--vel_collision_coeff", type=float, help="vel_collision_coeff of rewards"
+    )
+    parser.add_argument(
+        "--collision_exp_coeff", type=float, help="collision_exp_coeff of rewards"
+    )
+    parser.add_argument(
+        "--dist_margin", type=float, help="dist_margin for collision of rewards"
+    )
     parser.add_argument("--survive_rew", type=float, help="collision_coeff of rewards")
-    parser.add_argument("--check", type=bool, default = False, help="check of simulation, not make long csv")
+    parser.add_argument("--attitude_vel_coeff", type=float, help="attitude_vel_coeff")
+    parser.add_argument(
+        "--when_collision_coeff", type=float, help="when_collision_coeff"
+    )
+    parser.add_argument(
+        "--check",
+        type=bool,
+        default=False,
+        help="check of simulation, not make long csv",
+    )
     return parser
 
 
@@ -58,7 +80,7 @@ def main():
     )
 
     if not args.train:
-        cfg["simulation"]["num_envs"] = 1 
+        cfg["simulation"]["num_envs"] = 1
 
     # print(args.move_coeff)
     if args.move_coeff != None:
@@ -73,7 +95,10 @@ def main():
         cfg["rewards"]["dist_margin"] = args.dist_margin
     if args.survive_rew != None:
         cfg["rewards"]["survive_rew"] = args.survive_rew
-    # print(cfg["rewards"]["move_coeff"])
+    if args.when_collision_coeff != None:
+        cfg["rewards"]["when_collision_coeff"] = args.when_collision_coeff
+    if args.attitude_vel_coeff != None:
+        cfg["rewards"]["attitude_vel_coeff"] = args.attitude_vel_coeff
 
     # create training environment
     train_env = VisionEnv_v1(dump(cfg, Dumper=RoundTripDumper), False)
@@ -84,16 +109,15 @@ def main():
 
     if args.render:
         cfg["unity"]["render"] = "yes"
-    
+
     # create evaluation environment
     # old_envs_level = cfg["environment"]["level"]
     # cfg["environment"]["level"] = ["medium"] #evaluate in the medium environment
-    #same level regardless of argument of simulator.
     old_num_envs = cfg["simulation"]["num_envs"]
     cfg["simulation"]["num_envs"] = 1
     eval_env = VisionEnv_v1(dump(cfg, Dumper=RoundTripDumper), False)
     eval_env = wrapper.FlightEnvVec(eval_env)
-    
+
     # cfg["environment"]["level"] = old_envs_level
     cfg["simulation"]["num_envs"] = old_num_envs
 
@@ -102,9 +126,6 @@ def main():
     log_dir = rsg_root + "/saved"
     os.makedirs(log_dir, exist_ok=True)
     if args.train:
-        # level_list = cfg["environment"]["level"]
-        # for level in level_list:
-        #     cfg["environment"]["level"] = [level]
         model = RecurrentPPO(
             tensorboard_log=log_dir,
             policy="MlpLstmPolicy",
@@ -126,42 +147,33 @@ def main():
             use_sde=False,  # don't use (gSDE), doesn't work
             # env_cfg=cfg,
             verbose=1,
-            check = args.check
+            check=args.check,
         )
         # print(model.logger)
-        model.learn(total_timesteps=int(2E8), log_interval=10)
-    #     cfg_dir = model.logger.get_dir()+"/config_new.yaml"
-    #     with open(cfg_dir, "w") as outfile:
-    #         dump({
-    #     "rewards": {
-    #         "move_coeff": args.move_coeff,
-    #         "collision_coeff": args.collision_coeff,
-    #         "collision_exp_coeff": args.collision_exp_coeff,
-    #         "survive_rew": args.survive_rew,
-    #     }
-    # }, outfile, default_flow_style=False)
+        model.learn(
+            total_timesteps=int(2e8), policy_log_interval=100, tb_log_interval=10
+        )
         finish_time = time.time()
-        print("learning time is "+ str(finish_time-start_time))
+        print("learning time is " + str(finish_time - start_time))
     else:
-        os.system(os.environ["FLIGHTMARE_PATH"] + "/flightrender/RPG_Flightmare.x86_64 &")
+        os.system(
+            os.environ["FLIGHTMARE_PATH"] + "/flightrender/RPG_Flightmare.x86_64 &"
+        )
         #
-        weight = rsg_root + "/saved/RecurrentPPO_{0}/Policy/iter_{1:05d}.pth".format(args.trial, args.iter)
-        env_rms = rsg_root +"/saved/RecurrentPPO_{0}/RMS/iter_{1:05d}.npz".format(args.trial, args.iter)
+        weight = rsg_root + "/saved/RecurrentPPO_{0}/Policy/iter_{1:05d}.pth".format(
+            args.trial, args.iter
+        )
+        env_rms = rsg_root + "/saved/RecurrentPPO_{0}/RMS/iter_{1:05d}.npz".format(
+            args.trial, args.iter
+        )
 
         device = get_device("auto")
         saved_variables = torch.load(weight, map_location=device)
 
-        policy = MlpLstmPolicy.load(weight, device = device)
-        # # print("before policy.action_net: ",policy.action_net)
-        # # policy.action_net = torch.nn.Sequential(policy.action_net)
-        # # come from nn.Moduleq
-        # policy.to(device)
+        policy = MlpLstmPolicy.load(weight, device=device)
 
         eval_env.load_rms(env_rms)
-        # print("eval_env.connectUnity()")
-        # print(eval_env.connectUnity())
         test_policy(eval_env, policy, render=args.render)
-
 
 
 if __name__ == "__main__":
