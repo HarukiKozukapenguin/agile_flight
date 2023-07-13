@@ -171,6 +171,9 @@ def main():
 
         device = get_device("auto")
         saved_variables = torch.load(weight, map_location=device)
+        (saved_variables['data'])["shared_lstm"]=True
+        (saved_variables['data'])["enable_critic_lstm"]=False
+        torch.save(saved_variables, weight)
 
         policy = MlpLstmPolicy.load(weight, device=device)
 
