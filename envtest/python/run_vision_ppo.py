@@ -24,6 +24,8 @@ from sb3_contrib.ppo_recurrent import MlpLstmPolicy
 from rpg_baselines.torch.envs import vec_env_wrapper as wrapper
 from rpg_baselines.torch.common.util import test_policy
 
+from python.middle_layer_network import MiddleLayerActorCriticPolicy
+
 
 def configure_random_seed(seed, env=None):
     if env is not None:
@@ -128,10 +130,10 @@ def main():
     if args.train:
         model = RecurrentPPO(
             tensorboard_log=log_dir,
-            policy="MlpLstmPolicy",
+            policy=MiddleLayerActorCriticPolicy,
             policy_kwargs=dict(
                 activation_fn=torch.nn.ReLU,
-                net_arch=[dict(pi=[256, 256], vf=[512, 512])],
+                net_arch=[dict(pi=[256, 256, 128], vf=[512, 512, 256], important_obs=3)],
                 log_std_init=0.0,
                 shared_lstm=True,
                 enable_critic_lstm=False,
