@@ -22,8 +22,11 @@ class ImportantObsNetwork(nn.Module):
         self.activation_fn = activation_fn
         self.layer: List[nn.Module] = []
         last_layer_dim:int = feature_dim
-        for curr_layer_dim in net_arch:
-            self.layer.append(nn.Linear(last_layer_dim + important_obs_layers_dims, curr_layer_dim))
+        for idx, curr_layer_dim in enumerate(net_arch):
+            if idx == len(net_arch) - 1:
+                self.layer.append(nn.Linear(last_layer_dim, curr_layer_dim))
+            else:
+                self.layer.append(nn.Linear(last_layer_dim + important_obs_layers_dims, curr_layer_dim))
             last_layer_dim = curr_layer_dim
 
     def forward(self, x: th.Tensor, important_obs: th.Tensor):
@@ -31,10 +34,13 @@ class ImportantObsNetwork(nn.Module):
             important_obs = important_obs.to(x.device)
 
         
-        for layer in self.layer:
+        for idx, layer in enumerate(self.layer):
             if (layer.weight.device != x.device):
                 layer = layer.to(x.device)
-            input = th.cat((x, important_obs), dim=1).to(th.float32)
+            if idx == len(self.layer) - 1:
+                input = x.to(th.float32)
+            else:
+                input = th.cat((x, important_obs), dim=1).to(th.float32)
             x = layer(input)
             x = self.activation_fn()(x)
         return x
