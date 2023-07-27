@@ -172,12 +172,17 @@ def main():
         )
 
         device = get_device("auto")
-        saved_variables = torch.load(weight, map_location=device)
-        (saved_variables['data'])["shared_lstm"]=True
-        (saved_variables['data'])["enable_critic_lstm"]=False
-        torch.save(saved_variables, weight)
+        # saved_variables = torch.load(weight, map_location=device)
+        # # print((saved_variables["state_dict"]).keys())
+        # # print("(saved_variables['data'])[shared_lstm]: ",\
+        # #        saved_variables['data']["shared_lstm"])
+        # # print("saved_variables['data'])[enable_critic_lstm]: ",\
+        # #        saved_variables['data']["enable_critic_lstm"])
+        # (saved_variables['data'])["shared_lstm"]=False
+        # (saved_variables['data'])["enable_critic_lstm"]=True
+        # torch.save(saved_variables, weight)
 
-        policy = MlpLstmPolicy.load(weight, device=device)
+        policy = MiddleLayerActorCriticPolicy.load(weight, device=device)
 
         eval_env.load_rms(env_rms)
         test_policy(eval_env, policy, render=args.render)
