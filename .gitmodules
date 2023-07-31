@@ -12,3 +12,6 @@
 	path = dodgedrone_simulation
 	url = git@github.com:uzh-rpg/dodgedrone_simulation.git
 	branch = main
+[submodule "envtest/forest_navigation"]
+	path = envtest/forest_navigation
+	url = git@github.com:HarukiKozukapenguin/forest_navigation.git
