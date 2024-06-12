@@ -1,6 +1,6 @@
 # Global settings. 
 dt: 0.02 # s
-max_time: 30 # s
+max_time: 60 # s
 
 # Those settings are global as well but they can be overriden
 # individually by each object group below.
