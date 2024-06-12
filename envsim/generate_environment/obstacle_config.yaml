@@ -20,33 +20,15 @@ scale: [0.2, 0.5]
 box_static_region1:
   prefab_name: "rpg_box01"
   traj_type: "cc0000"
-  density: 0.11
-  pos_bb: [ 0, 60, -10, 10,  0,  10 ]
+  density: 0.2
+  pos_bb: [ 0, 60, -10, 10,  0,  0 ]
+  scale: [0.2, 0.5]
 
-box_static_region2:
+box_randaccel_region1:
   prefab_name: "rpg_box01"
-  traj_type: "cc0000"
-  density: 0.21
-  pos_bb: [ 0, 60, -10, 10,  0,  10 ]
-
-box_constvel_region2:
-  prefab_name: "rpg_box01"
-  traj_type: "ccc000"
-  density: 0.11
-  pos_bb: [ 20, 60, -10, 10,  0,  10 ]
-  scale: [0.5, 2]
-
-box_static_region3:
-  prefab_name: "rpg_box01"
-  traj_type: "cc0000"
-  density: 0.21
-  pos_bb: [ 40, 60, -10, 10,  0,  10 ]
-
-box_randaccel_region3:
-  prefab_name: "rpg_box01"
-  traj_type: "ccccr0"
-  density: 0.11
-  pos_bb: [ 40, 60, -10, 10,  0,  10 ]
-  vel_bb: [ -1,   1,  -1,  1, -1,  1 ]
-  acc_bb: [ -5,   5,  -5,  5, -5,  5 ]
-  scale: [0.5, 1.5]
+  traj_type: "ccc0r0"
+  density: 0.1
+  pos_bb: [ 0, 60, -10, 10,  0,  0 ]
+  vel_bb: [ -1,   1,  -1,  1, 0,  0 ]
+  acc_bb: [ -0.2,  0.2,  -0.2,  0.2, 0,  0 ]
+  scale: [0.2, 0.5]
