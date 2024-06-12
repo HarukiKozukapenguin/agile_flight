@@ -15,7 +15,7 @@ for i in $(eval echo {0..$N})
 do
   dirname="environment_""$i"
   mkdir -p $dirname
-  python obstacle_generator.py "$RANDOM"
+  python obstacle_generator.py "$RANDOM" $i $N
   mv csvtrajs $dirname
   mv dynamic_obstacles.yaml $dirname
   mv static_obstacles.csv $dirname

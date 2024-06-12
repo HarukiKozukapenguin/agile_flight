@@ -10,10 +10,15 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import axes3d
 
-if len(sys.argv) == 2:
+
+if len(sys.argv) == 4:
     SEED = int(sys.argv[1])
+    density_id = int(sys.argv[2])
+    env_num = int(sys.argv[3])
 else:
     SEED = 20220301
+    density_id = 200
+    env_num = 500
 random.seed(SEED)
 np.random.seed(SEED)
 
@@ -207,7 +212,8 @@ class ObstacleGroup:
         delta = self.bb[1,:] - self.bb[0,:]
         self.area = delta[0] * delta[1]
         self.volume = delta[0] * delta[1] * delta[2]
-        self.num_objects = int(np.ceil(self.area * self.config['density']))
+        self.density = self.config['density']*density_id/env_num
+        self.num_objects = int(np.ceil(self.area * self.density))
         for i in range(self.num_objects):
             self.obstacle_list.append(Obstacle(self.config))
 
