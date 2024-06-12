@@ -213,7 +213,7 @@ class ObstacleGroup:
         self.area = delta[0] * delta[1]
         self.volume = delta[0] * delta[1] * delta[2]
         self.density = self.config['density']*density_id/env_num
-        self.num_objects = int(np.ceil(self.area * self.density))
+        self.num_objects = int(np.ceil(self.area * self.density)) + 1
         for i in range(self.num_objects):
             self.obstacle_list.append(Obstacle(self.config))
 
