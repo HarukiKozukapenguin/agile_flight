@@ -155,7 +155,7 @@ def main():
         )
         # print(model.logger)
         model.learn(
-            total_timesteps=int(5e7), policy_log_interval=100, tb_log_interval=10
+            total_timesteps=int(8e7), policy_log_interval=100, tb_log_interval=10
         )
         finish_time = time.time()
         print("learning time is " + str(finish_time - start_time))
