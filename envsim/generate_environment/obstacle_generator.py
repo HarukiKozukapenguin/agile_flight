@@ -130,8 +130,8 @@ class Trajectory:
         num_y = np.sqrt(2*length_y/length_x*num_obstacle)
         id_x = (2*obstacle_id)//num_y
         id_y = (2*obstacle_id)%num_y
-        pos_x = (id_x + np.random.uniform(-0.2, 0.2))*length_x/num_x
-        pos_y = (id_y + np.random.uniform(-0.2, 0.2))*length_y/num_y
+        pos_x = (id_x + np.random.uniform(-0.2, 0.2))*length_x/num_x + bounds[0,0]
+        pos_y = (id_y + np.random.uniform(-0.2, 0.2))*length_y/num_y + bounds[0,1]
         return np.tile(np.array([pos_x, pos_y, 0]), (self.N,1))
 
     def generateTrajectory(self, identifier):
