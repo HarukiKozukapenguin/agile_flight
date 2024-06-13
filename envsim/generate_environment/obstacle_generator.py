@@ -23,7 +23,7 @@ random.seed(SEED)
 np.random.seed(SEED)
 
 class Trajectory:
-    def __init__(self, config, traj_type = "000000"):
+    def __init__(self, config, obstacle_id, num_obstacle, traj_type = "000000"):
         max_time = config['max_time']
         self.dt = config['dt']
         self.N = int(np.ceil(max_time/self.dt))
@@ -41,6 +41,8 @@ class Trajectory:
         self.t = np.arange(0, max_time, self.dt)
 
         self.config = config
+        self.obstacle_id = obstacle_id
+        self.num_obstacle = num_obstacle
         self.generateTrajectory(traj_type)
         self.integrate()
         self.boundingBox(config['pos_bb'])
@@ -100,7 +102,12 @@ class Trajectory:
         self.name = fname
 
 
-    def _parseIdentifier(self, identifier, bounds):
+    def _parseIdentifier(self, identifier, bounds, obstacle_id = -1, num_obstacle = 100):
+        if obstacle_id != -1:
+            # no difference by identifier if id is not -1
+            arr = self._uniform_param(obstacle_id, num_obstacle, bounds)
+            return arr
+
         dim = bounds.shape[1]
         if identifier == "0":
             arr = np.zeros((self.N,dim))
@@ -115,6 +122,17 @@ class Trajectory:
             exit(-1)
         return arr
 
+    def _uniform_param(self, obstacle_id: int, num_obstacle: int, bounds):
+        length_x = bounds[1,0]-bounds[0,0]
+        length_y = bounds[1,1]-bounds[0,1]
+        area = length_x * length_y
+        num_x = np.sqrt(2*length_x/length_y*num_obstacle)
+        num_y = np.sqrt(2*length_y/length_x*num_obstacle)
+        id_x = (2*obstacle_id)//num_y
+        id_y = (2*obstacle_id)%num_y
+        pos_x = (id_x + np.random.uniform(-0.2, 0.2))*length_x/num_x
+        pos_y = (id_y + np.random.uniform(-0.2, 0.2))*length_y/num_y
+        return np.tile(np.array([pos_x, pos_y, 0]), (self.N,1))
 
     def generateTrajectory(self, identifier):
         self.angacc = self._parseIdentifier(identifier[5], self.config['ang_bb'])
@@ -124,7 +142,7 @@ class Trajectory:
         self.vel = self._parseIdentifier(identifier[2], self.config['vel_bb'])
 
         self.eul = self._parseIdentifier(identifier[1], self.config['eul_bb'])
-        self.pos = self._parseIdentifier(identifier[0], self.config['pos_bb'])
+        self.pos = self._parseIdentifier(identifier[0], self.config['pos_bb'], self.obstacle_id, self.num_obstacle)
 
 
     def integrate(self):
@@ -144,12 +162,12 @@ class Trajectory:
 
 
 class Obstacle:
-    def __init__(self, config):
+    def __init__(self, config, obstacle_id, num_obstacle):
         self.prefab = config['prefab_name']
         self.scale = np.random.uniform(low=config['scale'][0],
                                        high=config['scale'][1])
         self.traj_type = config['traj_type']
-        self.trajectory = Trajectory(config, self.traj_type)
+        self.trajectory = Trajectory(config, obstacle_id, num_obstacle, self.traj_type)
 
 
     def toDict(self):
@@ -215,7 +233,7 @@ class ObstacleGroup:
         self.density = self.config['density']*density_id/env_num
         self.num_objects = int(np.ceil(self.area * self.density)) + 1
         for i in range(self.num_objects):
-            self.obstacle_list.append(Obstacle(self.config))
+            self.obstacle_list.append(Obstacle(self.config, i, self.num_objects))
 
 
     def getObstacleList(self):
