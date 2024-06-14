@@ -142,7 +142,7 @@ def main():
             eval_env=eval_env,
             gae_lambda=0.95,
             gamma=0.99,
-            n_steps=250,
+            n_steps=200,
             ent_coef=0.0,
             vf_coef=0.5,
             max_grad_norm=0.5,
