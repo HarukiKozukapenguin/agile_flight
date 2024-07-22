@@ -102,7 +102,7 @@ class Trajectory:
         self.name = fname
 
 
-    def _parseIdentifier(self, identifier, bounds, obstacle_id = -1, num_obstacle = 100):
+    def _parseIdentifier(self, identifier, bounds, obstacle_id = -1, num_obstacle = 100, vel=False):
         if obstacle_id != -1:
             # no difference by identifier if id is not -1
             arr = self._uniform_param(obstacle_id, num_obstacle, bounds)
@@ -113,7 +113,14 @@ class Trajectory:
             arr = np.zeros((self.N,dim))
         elif identifier == "c" or identifier == "C":
             delta = bounds[1,:] - bounds[0,:]
-            arr = np.tile(np.random.rand(1,dim) * delta + bounds[0,:], (self.N,1))
+            if vel:
+                values = np.tile(np.random.rand(1,dim) * delta + bounds[0,:], (self.N,1))
+                # x: small abs, y: large abs
+                x_values = np.where(np.abs(values[:, 0]) < np.abs(values[:, 1]), values[:, 0], values[:, 1])
+                y_values = np.where(np.abs(values[:, 0]) >= np.abs(values[:, 1]), values[:, 0], values[:, 1])
+                arr = np.column_stack((x_values, y_values, np.zeros(self.N)))
+            else:
+                arr = np.tile(np.random.rand(1,dim) * delta + bounds[0,:], (self.N,1))
         elif identifier == "r" or identifier == "R":
             delta = bounds[1,:] - bounds[0,:]
             arr = np.random.rand(self.N,dim) * delta + bounds[0,:]
@@ -139,7 +146,7 @@ class Trajectory:
         self.acc = self._parseIdentifier(identifier[4], self.config['acc_bb'])
 
         self.omega = self._parseIdentifier(identifier[3], self.config['ome_bb'])
-        self.vel = self._parseIdentifier(identifier[2], self.config['vel_bb'])
+        self.vel = self._parseIdentifier(identifier[2], self.config['vel_bb'], vel=True)
 
         self.eul = self._parseIdentifier(identifier[1], self.config['eul_bb'])
         self.pos = self._parseIdentifier(identifier[0], self.config['pos_bb'], self.obstacle_id, self.num_obstacle)
