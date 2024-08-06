@@ -146,7 +146,7 @@ def main():
             ent_coef=0.0,
             vf_coef=0.5,
             max_grad_norm=0.5,
-            batch_size=25000,
+            batch_size=2500,
             clip_range=0.2,
             use_sde=False,  # don't use (gSDE), doesn't work
             # env_cfg=cfg,
@@ -155,7 +155,7 @@ def main():
         )
         # print(model.logger)
         model.learn(
-            total_timesteps=int(8e7), policy_log_interval=100, tb_log_interval=10
+            total_timesteps=int(8e6), policy_log_interval=100, tb_log_interval=10
         )
         finish_time = time.time()
         print("learning time is " + str(finish_time - start_time))
