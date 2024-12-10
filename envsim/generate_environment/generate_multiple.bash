@@ -19,4 +19,5 @@ do
   mv csvtrajs $dirname
   mv dynamic_obstacles.yaml $dirname
   mv static_obstacles.csv $dirname
+  mv static_rectangle_obstacles.csv $dirname
 done

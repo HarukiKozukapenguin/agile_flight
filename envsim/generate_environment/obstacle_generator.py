@@ -171,6 +171,7 @@ class Trajectory:
 class Obstacle:
     def __init__(self, config, obstacle_id, num_obstacle):
         self.prefab = config['prefab_name']
+        self.circular = config["circular"]
         self.scale = np.random.uniform(low=config['scale'][0],
                                        high=config['scale'][1])
         self.traj_type = config['traj_type']
@@ -182,7 +183,8 @@ class Obstacle:
         d['prefab'] = self.prefab
         d['position'] = [float(x) for x in list(self.trajectory.pos[0,:])]
         d['rotation'] = [float(x) for x in list(self.trajectory.att[0,:])]
-        d['scale'] = 3*[self.scale]
+        AR = np.random.rand()
+        d['scale'] = [self.scale*AR, self.scale*(1-AR), self.scale]
         if self.trajectory.name is None:
             basepath = "csvtrajs"
             self.trajectory.toCsv(basepath)
@@ -193,6 +195,10 @@ class Obstacle:
 
     def isStatic(self):
         return self.trajectory.is_static
+    def isCircular(self):
+        return self.circular
+    def isRectangle(self):
+        return not self.circular
 
 
 class ObstacleGroup:
@@ -266,14 +272,22 @@ class World:
 
         i = 0
         static_obstacles = []
+        static_rectangle_obstacles = []
         for obstacle in obstacle_list:
-            if obstacle.isStatic():
+            if obstacle.isStatic() and obstacle.isCircular():
                 o = obstacle.toDict()
                 tmp = [o['prefab']]
                 tmp.extend(o['position'])
                 tmp.extend(o['rotation'])
                 tmp.extend(o['scale'])
                 static_obstacles.append(", ".join([str(x) for x in tmp]))
+            if obstacle.isStatic() and obstacle.isRectangle():
+                o = obstacle.toDict()
+                tmp = [o['prefab']]
+                tmp.extend(o['position'])
+                tmp.extend(o['rotation'])
+                tmp.extend(o['scale'])
+                static_rectangle_obstacles.append(", ".join([str(x) for x in tmp]))
             else:
                 i += 1
                 d["Object%i" % i] = obstacle.toDict()
@@ -284,7 +298,8 @@ class World:
 
         with open("static_obstacles.csv", "w") as f:
             f.write("\n".join(static_obstacles))
-
+        with open("static_rectangle_obstacles.csv", "w") as f:
+            f.write("\n".join(static_rectangle_obstacles))
 
 class Plotter:
     def __init__(self, csvfolder, config):
