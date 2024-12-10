@@ -281,14 +281,14 @@ class World:
                 tmp.extend(o['rotation'])
                 tmp.extend(o['scale'])
                 static_obstacles.append(", ".join([str(x) for x in tmp]))
-            if obstacle.isStatic() and obstacle.isRectangle():
+            elif obstacle.isStatic() and obstacle.isRectangle():
                 o = obstacle.toDict()
                 tmp = [o['prefab']]
                 tmp.extend(o['position'])
                 tmp.extend(o['rotation'])
                 tmp.extend(o['scale'])
                 static_rectangle_obstacles.append(", ".join([str(x) for x in tmp]))
-            else:
+            elif not obstacle.isStatic():
                 i += 1
                 d["Object%i" % i] = obstacle.toDict()
 
