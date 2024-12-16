@@ -29,7 +29,7 @@ box_rectangle_static_region1:
   prefab_name: "rpg_box01"
   circular: False
   traj_type: "cc0000"
-  density: 0.05
+  density: 0.10
   pos_bb: [ 0, 60, -10, 10,  0,  0 ]
   scale: [0.1, 0.8]
 
