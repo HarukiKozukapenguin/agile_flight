@@ -112,7 +112,7 @@ class MiddleLayerActorCriticPolicy(MlpLstmPolicy):
             observation_space,
             action_space,
             lr_schedule,
-            net_arch,
+            net_arch[0],
             use_sde = use_sde,
             log_std_init = log_std_init,
             activation_fn = activation_fn,
