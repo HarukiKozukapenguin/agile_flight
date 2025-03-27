@@ -133,7 +133,7 @@ def main():
             policy=MiddleLayerActorCriticPolicy,
             policy_kwargs=dict(
                 activation_fn=torch.nn.ReLU,
-                net_arch=[dict(pi=[256, 256], vf=[512, 512], important_obs=3)],
+                net_arch=dict(pi=[256, 256], vf=[512, 512], important_obs=3),
                 log_std_init=0.0,
                 # shared_lstm=True,
                 # enable_critic_lstm=False,
